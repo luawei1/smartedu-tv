@@ -9,6 +9,7 @@
 # Gson
 -keepattributes Signature
 -keep class com.smartedu.tv.data.model.** { *; }
+-keep class com.smartedu.tv.data.api.** { *; }
 
 # OkHttp
 -dontwarn okhttp3.**
