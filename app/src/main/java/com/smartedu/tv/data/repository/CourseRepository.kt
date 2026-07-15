@@ -38,12 +38,13 @@ class CourseRepository {
     }
 
     /**
-     * 获取课程列表（按学段筛选）
+     * 获取课程列表（按学段、年级筛选）
      *
      * @param section 学段: "小学" / "初中" / "高中"，null返回全部
+     * @param grade 年级: "一年级" / "二年级" 等，null不筛选
      * @param limit 最大返回数量
      */
-    suspend fun getCourses(section: String? = null, limit: Int = 20): Result<List<Course>> {
+    suspend fun getCourses(section: String? = null, grade: String? = null, limit: Int = 20): Result<List<Course>> {
         return try {
             // 1. 获取数据版本
             val version = api.getDataVersion(DATA_VERSION_URL)
@@ -57,11 +58,14 @@ class CourseRepository {
             // 3. 筛选和转换
             val courses = materials
                 .filter { item ->
-                    if (section == null) true
-                    else {
-                        val sectionTag = item.tag_list?.find { it.tag_dimension_id == "zxxxd" }
-                        sectionTag?.tag_name?.contains(section) == true
+                    val tags = item.tag_list ?: emptyList()
+                    val sectionMatch = if (section == null) true else {
+                        tags.find { it.tag_dimension_id == "zxxxd" }?.tag_name?.contains(section) == true
                     }
+                    val gradeMatch = if (grade == null) true else {
+                        tags.find { it.tag_dimension_id == "zxxnj" }?.tag_name?.contains(grade) == true
+                    }
+                    sectionMatch && gradeMatch
                 }
                 .take(limit)
                 .mapNotNull { item -> mapToCourse(item) }
