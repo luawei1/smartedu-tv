@@ -72,7 +72,7 @@ data class MaterialCustomProps(
 )
 
 data class MaterialRelations(
-    val course_resource: List<CourseResource>?
+    val national_course_resource: List<CourseResource>?
 )
 
 data class CourseResource(
@@ -132,5 +132,5 @@ data class PartCustomProps(
 )
 
 data class PartRelations(
-    val course_resource: List<CourseResource>?
+    val national_course_resource: List<CourseResource>?
 )

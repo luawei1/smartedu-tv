@@ -59,8 +59,8 @@ class CourseRepository {
                 .filter { item ->
                     if (section == null) true
                     else {
-                        val gradeTag = item.tag_list?.find { it.tag_dimension_id == "zxxnj" }
-                        gradeTag?.tag_name?.contains(section) == true
+                        val sectionTag = item.tag_list?.find { it.tag_dimension_id == "zxxxd" }
+                        sectionTag?.tag_name?.contains(section) == true
                     }
                 }
                 .take(limit)
@@ -96,7 +96,7 @@ class CourseRepository {
             // 4. 提取视频信息
             val videoMap = mutableMapOf<String, VideoInfo>()
             resources.forEach { part ->
-                part.relations?.course_resource?.forEach { res ->
+                part.relations?.national_course_resource?.forEach { res ->
                     val preview = res.custom_properties?.preview?.frame1
                     if (preview != null) {
                         val info = RetrofitClient.parseVideoInfo(preview)
