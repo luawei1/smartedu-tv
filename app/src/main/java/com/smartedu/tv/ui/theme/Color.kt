@@ -3,18 +3,18 @@ package com.smartedu.tv.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // 主色调
-val Primary = Color(0xFF1A56DB)
-val PrimaryLight = Color(0xFF3B82F6)
+val Primary = Color(0xFF007AFF) // Apple Blue
+val PrimaryLight = Color(0xFF47A1FF)
+val PrimaryDark = Color(0xFF0056B3)
+val Accent = Color(0xFF34C759) // Apple Green
 
-// 背景与表面
-val Background = Color(0xFF0F172A)
-val Surface = Color(0xFF1E293B)
-val SurfaceLight = Color(0xFF334155)
+val Background = Color(0xFF000000) // Pure Black for TV OLED
+val Surface = Color(0x33FFFFFF) // Frosted Glass / Translucent
+val SurfaceLight = Color(0x66FFFFFF) // Lighter Frosted Glass
 
-// 文本颜色
-val TextPrimary = Color(0xFFF1F5F9)
-val TextSecondary = Color(0xFF94A3B8)
+val TextPrimary = Color(0xFFFFFFFF)
+val TextSecondary = Color(0x99FFFFFF)
+val TextTertiary = Color(0x66FFFFFF)
 
-// 功能色
-val Accent = Color(0xFF10B981)
-val Warning = Color(0xFFF59E0B)
+val Error = Color(0xFFFF3B30) // Apple Red
+val Warning = Color(0xFFFFCC00) // Apple Yellow

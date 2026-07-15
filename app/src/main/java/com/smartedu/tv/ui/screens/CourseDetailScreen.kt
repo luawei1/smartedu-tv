@@ -116,16 +116,14 @@ private fun CourseDetailContent(
         ) {
             // 返回按钮
             var backFocused by remember { mutableStateOf(false) }
-            IconButton(
+            androidx.tv.material3.IconButton(
                 onClick = onBack,
-                modifier = Modifier
-                    .focusable()
-                    .onFocusChanged { backFocused = it.isFocused }
+                modifier = Modifier.onFocusChanged { backFocused = it.isFocused }
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "返回",
-                    tint = if (backFocused) Primary else TextSecondary
+                    tint = if (backFocused) Color.White else TextSecondary
                 )
             }
 
@@ -137,33 +135,33 @@ private fun CourseDetailContent(
                 contentDescription = detail.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(12.dp)),
+                    .height(240.dp)
+                    .clip(RoundedCornerShape(16.dp)),
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // 标题
-            Text(
+            androidx.compose.material3.Text(
                 text = detail.title,
-                fontSize = 22.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 元信息
-            InfoChip(label = detail.grade)
-            Spacer(modifier = Modifier.height(6.dp))
-            InfoChip(label = detail.subject)
-            Spacer(modifier = Modifier.height(6.dp))
-            InfoChip(label = detail.publisher)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                InfoChip(label = detail.grade)
+                InfoChip(label = detail.subject)
+                InfoChip(label = detail.publisher)
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // 播放按钮
             val firstPlayable = detail.chapters.indexOfFirst { it.hasVideo }
@@ -173,15 +171,24 @@ private fun CourseDetailContent(
                     onClick = { onPlayChapter(detail.id, firstPlayable) },
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(56.dp)
                         .focusable()
                         .onFocusChanged { playFocused = it.isFocused },
-                    colors = ButtonDefaults.colors(
-                        containerColor = if (playFocused) PrimaryLight else Primary
+                    shape = androidx.tv.material3.ButtonDefaults.shape(shape = RoundedCornerShape(28.dp)),
+                    scale = androidx.tv.material3.ButtonDefaults.scale(focusedScale = 1.05f),
+                    colors = androidx.tv.material3.ButtonDefaults.colors(
+                        containerColor = Primary,
+                        focusedContainerColor = Color.White,
+                        contentColor = Color.White,
+                        focusedContentColor = Primary
+                    ),
+                    glow = androidx.tv.material3.ButtonDefaults.glow(
+                        focusedGlow = Glow(elevationColor = PrimaryLight.copy(alpha = 0.5f), elevation = 16.dp)
                     )
                 ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(28.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("立即学习", fontSize = 16.sp)
+                    androidx.compose.material3.Text("立即学习", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -191,25 +198,25 @@ private fun CourseDetailContent(
             modifier = Modifier
                 .weight(0.6f)
                 .fillMaxHeight()
-                .padding(top = 32.dp, end = 32.dp, bottom = 32.dp)
+                .padding(top = 48.dp, end = 48.dp, bottom = 48.dp)
         ) {
-            Text(
+            androidx.compose.material3.Text(
                 text = "章节目录",
-                fontSize = 18.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary,
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Text(
+            androidx.compose.material3.Text(
                 text = "共 ${detail.chapters.size} 节",
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 color = TextSecondary,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 24.dp)
             )
 
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 itemsIndexed(detail.chapters, key = { _, ch -> ch.id }) { index, chapter ->
                     ChapterRow(
@@ -229,13 +236,14 @@ private fun CourseDetailContent(
 
 @Composable
 private fun InfoChip(label: String) {
+    if (label.isBlank()) return
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(Surface)
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(text = label, fontSize = 12.sp, color = TextSecondary)
+        androidx.compose.material3.Text(text = label, fontSize = 13.sp, color = TextTertiary)
     }
 }
 
@@ -243,42 +251,45 @@ private fun InfoChip(label: String) {
 private fun ChapterRow(index: Int, chapter: Chapter, onClick: () -> Unit) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    androidx.tv.material3.Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .focusable()
             .onFocusChanged { isFocused = it.isFocused },
-        shape = CardDefaults.shape(shape = RoundedCornerShape(8.dp)),
+        shape = CardDefaults.shape(shape = RoundedCornerShape(12.dp)),
+        scale = CardDefaults.scale(focusedScale = 1.02f),
+        glow = CardDefaults.glow(
+            focusedGlow = Glow(elevationColor = PrimaryLight.copy(alpha = 0.5f), elevation = 12.dp)
+        ),
         colors = CardDefaults.colors(
             containerColor = when {
-                isFocused -> SurfaceLight
                 chapter.hasVideo -> Surface
-                else -> Surface.copy(alpha = 0.5f)
-            }
+                else -> Surface.copy(alpha = 0.3f)
+            },
+            focusedContainerColor = SurfaceLight
         )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号
-            Text(
+            androidx.compose.material3.Text(
                 text = String.format("%02d", index),
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (chapter.hasVideo) Primary else TextSecondary,
-                modifier = Modifier.width(32.dp)
+                color = if (chapter.hasVideo) Primary else TextTertiary,
+                modifier = Modifier.width(40.dp)
             )
 
             // 标题
-            Text(
+            androidx.compose.material3.Text(
                 text = chapter.title,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (chapter.hasVideo) TextPrimary else TextSecondary,
+                color = if (chapter.hasVideo) (if (isFocused) Color.White else TextPrimary) else TextSecondary,
                 modifier = Modifier.weight(1f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -289,14 +300,14 @@ private fun ChapterRow(index: Int, chapter: Chapter, onClick: () -> Unit) {
                 Icon(
                     Icons.Default.PlayArrow,
                     contentDescription = "可播放",
-                    tint = Accent,
-                    modifier = Modifier.size(20.dp)
+                    tint = if (isFocused) PrimaryLight else Accent,
+                    modifier = Modifier.size(24.dp)
                 )
             } else {
-                Text(
+                androidx.compose.material3.Text(
                     text = "暂无视频",
-                    fontSize = 11.sp,
-                    color = TextSecondary
+                    fontSize = 12.sp,
+                    color = TextTertiary
                 )
             }
         }

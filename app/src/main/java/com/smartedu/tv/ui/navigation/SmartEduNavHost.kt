@@ -49,9 +49,19 @@ fun SmartEduNavHost() {
                 onCourseClick = { courseId ->
                     navController.navigate("course/$courseId")
                 },
-                onLoginClick = {
+                onNavigateToSettings = {
+                    navController.navigate("settings")
+                },
+                onNavigateToProfile = {
                     navController.navigate("login")
                 }
+            )
+        }
+
+        // 设置页
+        composable("settings") {
+            SettingsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
