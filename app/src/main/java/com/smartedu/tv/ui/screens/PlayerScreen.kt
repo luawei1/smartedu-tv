@@ -4,6 +4,7 @@ import android.view.KeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.Text
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -61,8 +63,8 @@ fun PlayerScreen(
 
     // 加载章节数据并准备播放
     LaunchedEffect(courseId, chapterIndex) {
-        val detail = courseRepository.getCourseDetail(courseId)
-        val chapters = detail?.chapters ?: emptyList()
+        val detailResult = courseRepository.getCourseDetail(courseId)
+        val chapters = detailResult.getOrNull()?.chapters ?: emptyList()
         if (chapterIndex in chapters.indices) {
             chapter = chapters[chapterIndex]
             chapterTitle = chapters[chapterIndex].title

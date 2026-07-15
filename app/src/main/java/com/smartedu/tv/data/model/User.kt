@@ -17,3 +17,10 @@ data class DeviceCodeResponse(
     val expiresIn: Int,
     val interval: Int
 )
+
+data class TokenResponse(
+    val status: String,
+    val token: String? = null,
+    val userId: String? = null,
+    val nickname: String? = null
+)

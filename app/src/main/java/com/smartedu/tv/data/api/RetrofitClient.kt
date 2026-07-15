@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit
  */
 object RetrofitClient {
 
+    var token: String? = null
+
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)

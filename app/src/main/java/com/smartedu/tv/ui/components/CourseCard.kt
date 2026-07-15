@@ -60,14 +60,14 @@ fun CourseCard(
             .scale(scale)
             .onFocusChanged { isFocused = it.isFocused }
             .focusable(),
-        shape = RoundedCornerShape(12.dp),
+        shape = CardDefaults.shape(shape = RoundedCornerShape(12.dp)),
         colors = CardDefaults.colors(
             containerColor = Surface,
             focusedContainerColor = SurfaceLight
         ),
         border = CardDefaults.border(
-            focusedBorder = borderStroke,
-            border = borderStroke
+            focusedBorder = Border(border = BorderStroke(3.dp, PrimaryLight)),
+            border = Border(border = BorderStroke(1.dp, SurfaceLight))
         )
     ) {
         Column {
@@ -102,9 +102,10 @@ fun CourseCard(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = Primary.copy(alpha = 0.2f)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Primary.copy(alpha = 0.2f))
                     ) {
                         Text(
                             text = course.subject,
@@ -113,9 +114,10 @@ fun CourseCard(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = Accent.copy(alpha = 0.2f)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Accent.copy(alpha = 0.2f))
                     ) {
                         Text(
                             text = course.grade,

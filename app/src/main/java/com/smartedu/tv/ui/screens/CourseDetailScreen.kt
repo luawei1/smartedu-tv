@@ -169,12 +169,12 @@ private fun CourseDetailContent(
             if (firstPlayable >= 0) {
                 var playFocused by remember { mutableStateOf(false) }
                 Button(
-                    onClick = { onPlayChapter(courseId = detail.id, chapterIndex = firstPlayable) },
+                    onClick = { onPlayChapter(detail.id, firstPlayable) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusable()
                         .onFocusChanged { playFocused = it.isFocused },
-                    colors = ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.colors(
                         containerColor = if (playFocused) PrimaryLight else Primary
                     )
                 ) {
@@ -248,8 +248,8 @@ private fun ChapterRow(index: Int, chapter: Chapter, onClick: () -> Unit) {
             .fillMaxWidth()
             .focusable()
             .onFocusChanged { isFocused = it.isFocused },
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
+        shape = CardDefaults.shape(shape = RoundedCornerShape(8.dp)),
+        colors = CardDefaults.colors(
             containerColor = when {
                 isFocused -> SurfaceLight
                 chapter.hasVideo -> Surface

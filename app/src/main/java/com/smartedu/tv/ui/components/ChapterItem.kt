@@ -40,20 +40,19 @@ fun ChapterItem(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    val backgroundColor = if (isFocused) SurfaceLight else Surface
-    val borderColor = if (isFocused) PrimaryLight else Color.Transparent
-
     Surface(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .onFocusChanged { isFocused = it.isFocused }
-            .focusable(),
-        shape = RoundedCornerShape(8.dp),
-        color = backgroundColor,
-        border = SurfaceDefaults.border(
-            focusedBorder = Border(border = 2.dp, color = borderColor),
-            border = Border(border = 1.dp, color = SurfaceLight)
+            .onFocusChanged { isFocused = it.isFocused },
+        shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = Surface,
+            focusedContainerColor = SurfaceLight
+        ),
+        border = ClickableSurfaceDefaults.border(
+            focusedBorder = Border(border = androidx.compose.foundation.BorderStroke(2.dp, PrimaryLight)),
+            border = Border(border = androidx.compose.foundation.BorderStroke(1.dp, SurfaceLight))
         )
     ) {
         Row(

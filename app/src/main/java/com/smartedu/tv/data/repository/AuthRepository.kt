@@ -28,7 +28,7 @@ class AuthRepository(private val context: Context) {
         private val KEY_NICKNAME = stringPreferencesKey("nickname")
     }
 
-    private val api = RetrofitClient.apiService
+    private val api = RetrofitClient.api
 
     /** 当前设备码（内存缓存） */
     private var currentDeviceCode: String? = null
