@@ -112,6 +112,9 @@ class CourseRepository {
                                 // 多重映射
                                 map[part.id] = videoInfo
                                 map[res.id] = videoInfo
+                                part.chapter_ids?.forEach { chId ->
+                                    map[chId] = videoInfo
+                                }
                                 if (!part.title.isNullOrBlank()) map[part.title] = videoInfo
                                 val resTitle = res.global_title?.`zh-CN`
                                 if (!resTitle.isNullOrBlank()) map[resTitle] = videoInfo

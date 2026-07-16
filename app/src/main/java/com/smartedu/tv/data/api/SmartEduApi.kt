@@ -123,6 +123,7 @@ data class ChapterNode(
 data class PartResource(
     val id: String,
     val title: String?,
+    val chapter_ids: List<String>?,
     val custom_properties: PartCustomProps?,
     val relations: PartRelations?
 )
