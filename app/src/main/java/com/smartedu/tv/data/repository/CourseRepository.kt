@@ -100,20 +100,22 @@ class CourseRepository {
                 resources.forEach { part ->
                     val relations = part.relations?.national_course_resource ?: emptyList()
                     relations.forEach { res ->
-                        val props = res.custom_properties
-                        val urlParams = extractVideoUrlParams(props)
-                        if (urlParams != null) {
-                            var preview = props?.preview?.cover
-                            if (preview == null && props?.thumbnails?.isNotEmpty() == true) {
-                                preview = props.thumbnails.first()
+                        var preview = res.custom_properties?.preview?.frame1
+                        if (preview == null && res.custom_properties?.thumbnails?.isNotEmpty() == true) {
+                            preview = res.custom_properties.thumbnails.first()
+                        }
+                        
+                        if (preview != null) {
+                            val info = RetrofitClient.parseVideoInfo(preview)
+                            if (info != null) {
+                                val videoInfo = VideoInfo(info.first, info.second, preview)
+                                // 多重映射
+                                map[part.id] = videoInfo
+                                map[res.id] = videoInfo
+                                if (!part.title.isNullOrBlank()) map[part.title] = videoInfo
+                                val resTitle = res.global_title?.`zh-CN`
+                                if (!resTitle.isNullOrBlank()) map[resTitle] = videoInfo
                             }
-                            
-                            val info = VideoInfo(urlParams.first, urlParams.second, preview ?: "")
-                            // 强大的多重映射机制：只要章节树能匹配上其中任何一个（ID或标题），就能找到视频
-                            map[part.id] = info
-                            map[res.id] = info
-                            if (!part.title.isNullOrBlank()) map[part.title] = info
-                            if (!res.title.isNullOrBlank()) map[res.title] = info
                         }
                     }
                 }
