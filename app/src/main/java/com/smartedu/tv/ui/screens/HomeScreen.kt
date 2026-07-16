@@ -261,7 +261,7 @@ private fun HomeContent(
                     Text("⚠️ 加载失败: $errorMessage", color = Warning, modifier = Modifier.padding(32.dp))
                 }
             } else {
-                val filteredCourses = if (currentPublisher == "全部版本") courses else courses.filter { it.publisher == currentPublisher }
+                val filteredCourses = if (currentPublisher == "全部版本") courses else courses.filter { it.publisher.contains(currentPublisher) }
                 
                 if (filteredCourses.isEmpty()) {
                     item {

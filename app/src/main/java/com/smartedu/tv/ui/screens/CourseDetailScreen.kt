@@ -49,10 +49,18 @@ fun CourseDetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = remember { com.smartedu.tv.data.local.UserPreferences(context) }
+    
     LaunchedEffect(courseId) {
         isLoading = true
+        errorMessage = null
         repo.getCourseDetail(courseId)
-            .onSuccess { detail = it }
+            .onSuccess { 
+                detail = it 
+                // 只要成功拉取详情，就将其存入最近观看历史
+                prefs.saveToHistory(it.id, it.title, it.coverUrl)
+            }
             .onFailure { errorMessage = it.message }
         isLoading = false
     }
@@ -117,14 +125,14 @@ private fun CourseDetailContent(
         ) {
             // 返回按钮
             var backFocused by remember { mutableStateOf(false) }
-            androidx.tv.material3.IconButton(
+            androidx.compose.material3.IconButton(
                 onClick = onBack,
                 modifier = Modifier.onFocusChanged { backFocused = it.isFocused }
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "返回",
-                    tint = if (backFocused) Color.White else TextSecondary
+                    tint = if (backFocused) Primary else TextSecondary
                 )
             }
 

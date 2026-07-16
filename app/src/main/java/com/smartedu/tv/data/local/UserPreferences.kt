@@ -13,10 +13,17 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 
 class UserPreferences(private val context: Context) {
 
+    suspend fun saveSubject(subject: String) {
+        context.dataStore.edit { preferences ->
+            preferences[SUBJECT_KEY] = subject
+        }
+    }
+
     companion object {
         private val SECTION_KEY = stringPreferencesKey("user_section")
         private val GRADE_KEY = stringPreferencesKey("user_grade")
         private val SUBJECT_KEY = stringPreferencesKey("user_subject")
+        private val HISTORY_KEY = stringPreferencesKey("user_history") // JSON array of course history
         
         // 默认配置
         const val DEFAULT_SECTION = "小学"
@@ -48,9 +55,41 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    suspend fun saveSubject(subject: String) {
+    // 历史记录格式：[{"id":"xxx", "title":"xxx", "coverUrl":"xxx"}, ...]
+    val historyFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[HISTORY_KEY] ?: "[]"
+    }
+
+    suspend fun saveToHistory(courseId: String, title: String, coverUrl: String) {
         context.dataStore.edit { preferences ->
-            preferences[SUBJECT_KEY] = subject
+            val currentJson = preferences[HISTORY_KEY] ?: "[]"
+            try {
+                val array = org.json.JSONArray(currentJson)
+                val newArray = org.json.JSONArray()
+                
+                // 将新项放在最前面
+                val newItem = org.json.JSONObject()
+                newItem.put("id", courseId)
+                newItem.put("title", title)
+                newItem.put("coverUrl", coverUrl)
+                newArray.put(newItem)
+                
+                // 复制旧项（去重，保留最多 10 个）
+                var count = 1
+                for (i in 0 until array.length()) {
+                    if (count >= 10) break
+                    val item = array.getJSONObject(i)
+                    if (item.getString("id") != courseId) {
+                        newArray.put(item)
+                        count++
+                    }
+                }
+                
+                preferences[HISTORY_KEY] = newArray.toString()
+            } catch (e: Exception) {
+                // If parsing fails, reset
+                preferences[HISTORY_KEY] = "[{\"id\":\"$courseId\",\"title\":\"$title\",\"coverUrl\":\"$coverUrl\"}]"
+            }
         }
     }
 }

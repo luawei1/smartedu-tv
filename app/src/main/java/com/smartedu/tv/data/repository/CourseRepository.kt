@@ -44,7 +44,7 @@ class CourseRepository {
      * @param grade 年级: "一年级" / "二年级" 等，null不筛选
      * @param limit 最大返回数量
      */
-    suspend fun getCourses(section: String? = null, grade: String? = null, limit: Int = 20): Result<List<Course>> {
+    suspend fun getCourses(section: String? = null, grade: String? = null, publisher: String? = null, limit: Int = 20): Result<List<Course>> {
         return try {
             // 1. 获取数据版本
             val version = api.getDataVersion(DATA_VERSION_URL)
@@ -59,13 +59,16 @@ class CourseRepository {
             val courses = materials
                 .filter { item ->
                     val tags = item.tag_list ?: emptyList()
-                    val sectionMatch = if (section == null) true else {
+                    val sectionMatch = if (section == null || section == "全部学段") true else {
                         tags.find { it.tag_dimension_id == "zxxxd" }?.tag_name?.contains(section) == true
                     }
-                    val gradeMatch = if (grade == null) true else {
+                    val gradeMatch = if (grade == null || grade == "全部年级") true else {
                         tags.find { it.tag_dimension_id == "zxxnj" }?.tag_name?.contains(grade) == true
                     }
-                    sectionMatch && gradeMatch
+                    val publisherMatch = if (publisher == null || publisher == "全部版本") true else {
+                        tags.find { it.tag_dimension_id == "zxxbb" }?.tag_name?.contains(publisher) == true
+                    }
+                    sectionMatch && gradeMatch && publisherMatch
                 }
                 .take(limit)
                 .mapNotNull { item -> mapToCourse(item) }
@@ -94,36 +97,38 @@ class CourseRepository {
             val resources = try {
                 api.getPartResources(resUrl)
             } catch (e: Exception) {
-                emptyList()
-            }
-
-            // 4. 提取视频信息
-            val videoMap = mutableMapOf<String, VideoInfo>()
-            resources.forEach { part ->
-                part.relations?.national_course_resource?.forEach { res ->
-                    // 优先尝试从 preview 提取
-                    var preview = res.custom_properties?.preview?.frame1
-                    // 兜底尝试从 thumbnails 提取（如果 preview 不存在）
-                    if (preview == null && res.custom_properties?.thumbnails?.isNotEmpty() == true) {
-                        preview = res.custom_properties.thumbnails.first()
-                    }
-                    if (preview != null) {
-                        val info = RetrofitClient.parseVideoInfo(preview)
-                        if (info != null) {
-                            videoMap[part.id] = VideoInfo( // 使用 part.id 才能和 ChapterNode.id 匹配
-                                resourceId = info.first,
-                                timestamp = info.second,
-                                coverUrl = preview
-                            )
+            val videoMap = try {
+                val resources = api.getPartResources(resUrl)
+                val map = mutableMapOf<String, VideoInfo>()
+                resources.forEach { part ->
+                    val relations = part.relations?.national_course_resource ?: emptyList()
+                    relations.forEach { res ->
+                        val props = res.custom_properties
+                        val urlParams = extractVideoUrlParams(props)
+                        if (urlParams != null) {
+                            var preview = props?.preview?.cover
+                            if (preview == null && props?.thumbnails?.isNotEmpty() == true) {
+                                preview = props.thumbnails.first()
+                            }
+                            
+                            val info = VideoInfo(urlParams.first, urlParams.second, preview ?: "")
+                            // 强大的多重映射机制：只要章节树能匹配上其中任何一个（ID或标题），就能找到视频
+                            map[part.id] = info
+                            map[res.id] = info
+                            if (!part.title.isNullOrBlank()) map[part.title] = info
+                            if (!res.title.isNullOrBlank()) map[res.title] = info
                         }
                     }
                 }
+                map
+            } catch (e: Exception) {
+                emptyMap()
             }
 
-            // 5. 转换章节
+            // 4. 转换章节
             val flatChapters = flattenChapters(chapters, videoMap)
 
-            // 6. 构建CourseDetail
+            // 5. 构建CourseDetail
             val tags = detail.tag_list ?: emptyList()
             val grade = tags.find { it.tag_dimension_id == "zxxnj" }?.tag_name ?: ""
             val subject = tags.find { it.tag_dimension_id == "zxxxk" }?.tag_name ?: ""
@@ -180,7 +185,10 @@ class CourseRepository {
         val result = mutableListOf<Chapter>()
         nodes.forEachIndexed { index, node ->
             val num = if (prefix.isEmpty()) "${index + 1}" else "$prefix.${index + 1}"
-            val video = videoMap[node.id]
+            val title = node.rich_title ?: node.title
+            // 强大的兜底机制：优先尝试 ID 匹配，如果不匹配，再尝试标题匹配
+            val video = videoMap[node.id] ?: videoMap[title]
+            
             val videoUrl = if (video != null) {
                 RetrofitClient.buildVideoUrl(video.resourceId, video.timestamp)
             } else ""
