@@ -272,7 +272,8 @@ private fun ChapterRow(index: Int, chapter: Chapter, onClick: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .androidx.compose.foundation.clickable { onClick() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号

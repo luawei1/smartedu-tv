@@ -54,7 +54,8 @@ fun HomeScreen(
                 currentRoute = "home",
                 onNavigateToHome = { },
                 onNavigateToSettings = onNavigateToSettings,
-                onNavigateToProfile = onNavigateToProfile
+                onNavigateToProfile = onNavigateToProfile,
+                drawerState = drawerState
             )
         }
     ) {
@@ -73,40 +74,51 @@ private fun DrawerMenu(
     currentRoute: String,
     onNavigateToHome: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    drawerState: DrawerState
 ) {
+    val isClosed = drawerState.currentValue == DrawerValue.Closed
+    val width = if (isClosed) 80.dp else 240.dp
+    
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(280.dp)
-            .background(Surface.copy(alpha = 0.9f))
-            .padding(vertical = 48.dp, horizontal = 24.dp),
+            .width(width)
+            .background(Color(0xFF1C1C1E).copy(alpha = 0.95f)) // Apple Dark Space Gray
+            .padding(vertical = 48.dp, horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "智慧教育TV",
-            color = TextPrimary,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 32.dp, start = 16.dp)
-        )
+        if (!isClosed) {
+            Text(
+                text = "智慧教育TV",
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 32.dp, start = 8.dp)
+            )
+        } else {
+            Spacer(modifier = Modifier.height(64.dp))
+        }
 
         DrawerMenuItem(
             icon = Icons.Default.Home,
             text = "发现课程",
             isSelected = currentRoute == "home",
+            isClosed = isClosed,
             onClick = onNavigateToHome
         )
         DrawerMenuItem(
             icon = Icons.Default.Person,
             text = "我的学习",
             isSelected = currentRoute == "profile",
+            isClosed = isClosed,
             onClick = onNavigateToProfile
         )
         DrawerMenuItem(
             icon = Icons.Default.Settings,
             text = "系统设置",
             isSelected = currentRoute == "settings",
+            isClosed = isClosed,
             onClick = onNavigateToSettings
         )
     }
@@ -117,6 +129,7 @@ private fun DrawerMenuItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String,
     isSelected: Boolean,
+    isClosed: Boolean,
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -130,17 +143,21 @@ private fun DrawerMenuItem(
         colors = ClickableSurfaceDefaults.colors(
             containerColor = if (isSelected) Primary.copy(alpha = 0.2f) else Color.Transparent,
             focusedContainerColor = Primary,
-            contentColor = if (isSelected) PrimaryLight else TextSecondary,
+            contentColor = if (isSelected) PrimaryLight else Color(0x99FFFFFF), // TextSecondary
             focusedContentColor = Color.White
         )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .androidx.compose.foundation.clickable { onClick() }, // Touch bypass
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null)
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            if (!isClosed) {
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(text, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            }
         }
     }
 }
@@ -287,7 +304,9 @@ private fun SubjectTabs(
                     text = subject,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     fontSize = 18.sp,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp)
+                    modifier = Modifier
+                        .androidx.compose.foundation.clickable { onSelect(subject) }
+                        .padding(horizontal = 24.dp, vertical = 10.dp)
                 )
             }
         }
@@ -319,40 +338,32 @@ private fun PublisherTabs(
                 androidx.compose.material3.Text(
                     text = pub,
                     fontSize = 14.sp,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                    modifier = Modifier
+                        .androidx.compose.foundation.clickable { onSelect(pub) }
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
         }
     }
 }
 
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun CourseGrid(
     courses: List<Course>,
     onCourseClick: (String) -> Unit
 ) {
-    // FlowRow or just a LazyRow for simplicity, let's use LazyRow or split into multiple rows
-    // To make it look like an Apple TV grid, we can just display them in a horizontal list for now
-    // or chunk them into a vertical column of rows.
-    
-    val rows = courses.chunked(4) // 4 items per row
-    
-    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        rows.forEach { rowCourses ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
+    androidx.compose.foundation.layout.FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        courses.forEach { course ->
+            Box(
+                modifier = Modifier
+                    .width(200.dp)
             ) {
-                rowCourses.forEach { course ->
-                    Box(modifier = Modifier.weight(1f)) {
-                        AppleStyleCourseCard(course = course, onClick = { onCourseClick(course.id) })
-                    }
-                }
-                // Fill remaining space if less than 4 items
-                repeat(4 - rowCourses.size) {
-                    Box(modifier = Modifier.weight(1f))
-                }
+                AppleStyleCourseCard(course = course, onClick = { onCourseClick(course.id) })
             }
         }
     }
@@ -377,10 +388,12 @@ private fun AppleStyleCourseCard(course: Course, onClick: () -> Unit) {
             containerColor = Surface
         )
     ) {
-        Column {
+        Column(modifier = Modifier.androidx.compose.foundation.clickable { onClick() }) {
             AsyncImage(
                 model = course.coverUrl,
                 contentDescription = course.title,
+                placeholder = androidx.compose.ui.graphics.painter.ColorPainter(Color.DarkGray),
+                error = androidx.compose.ui.graphics.painter.ColorPainter(Color.DarkGray),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -399,7 +412,7 @@ private fun AppleStyleCourseCard(course: Course, onClick: () -> Unit) {
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
