@@ -82,7 +82,8 @@ data class CourseResource(
 )
 
 data class CourseResourceProps(
-    val preview: VideoPreview?
+    val preview: VideoPreview?,
+    val thumbnails: List<String>?
 )
 
 data class VideoPreview(

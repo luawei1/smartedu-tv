@@ -101,11 +101,16 @@ class CourseRepository {
             val videoMap = mutableMapOf<String, VideoInfo>()
             resources.forEach { part ->
                 part.relations?.national_course_resource?.forEach { res ->
-                    val preview = res.custom_properties?.preview?.frame1
+                    // 优先尝试从 preview 提取
+                    var preview = res.custom_properties?.preview?.frame1
+                    // 兜底尝试从 thumbnails 提取（如果 preview 不存在）
+                    if (preview == null && res.custom_properties?.thumbnails?.isNotEmpty() == true) {
+                        preview = res.custom_properties.thumbnails.first()
+                    }
                     if (preview != null) {
                         val info = RetrofitClient.parseVideoInfo(preview)
                         if (info != null) {
-                            videoMap[res.id] = VideoInfo(
+                            videoMap[part.id] = VideoInfo( // 使用 part.id 才能和 ChapterNode.id 匹配
                                 resourceId = info.first,
                                 timestamp = info.second,
                                 coverUrl = preview

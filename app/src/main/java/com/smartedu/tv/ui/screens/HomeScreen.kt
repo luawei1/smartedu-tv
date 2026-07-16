@@ -272,19 +272,22 @@ private fun SubjectTabs(
             val isSelected = subject == selected
             var isFocused by remember { mutableStateOf(false) }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(if (isSelected) Primary else if (isFocused) SurfaceLight else Surface)
-                    .focusable()
-                    .onFocusChanged { isFocused = it.isFocused }
-                    .padding(horizontal = 24.dp, vertical = 10.dp)
+            androidx.tv.material3.Surface(
+                onClick = { onSelect(subject) },
+                modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
+                shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(24.dp)),
+                colors = ClickableSurfaceDefaults.colors(
+                    containerColor = if (isSelected) Primary else Surface,
+                    focusedContainerColor = if (isSelected) PrimaryLight else SurfaceLight,
+                    contentColor = if (isSelected) Color.White else TextSecondary,
+                    focusedContentColor = Color.White
+                )
             ) {
                 androidx.compose.material3.Text(
                     text = subject,
-                    color = if (isSelected || isFocused) Color.White else TextSecondary,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp)
                 )
             }
         }
@@ -302,18 +305,21 @@ private fun PublisherTabs(
             val isSelected = pub == selected
             var isFocused by remember { mutableStateOf(false) }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (isSelected) SurfaceLight else if (isFocused) Surface.copy(alpha = 0.5f) else Color.Transparent)
-                    .focusable()
-                    .onFocusChanged { isFocused = it.isFocused }
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            androidx.tv.material3.Surface(
+                onClick = { onSelect(pub) },
+                modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
+                shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
+                colors = ClickableSurfaceDefaults.colors(
+                    containerColor = if (isSelected) SurfaceLight else Color.Transparent,
+                    focusedContainerColor = Surface,
+                    contentColor = if (isSelected) Color.White else TextTertiary,
+                    focusedContentColor = Color.White
+                )
             ) {
                 androidx.compose.material3.Text(
                     text = pub,
-                    color = if (isSelected || isFocused) Color.White else TextTertiary,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
         }
