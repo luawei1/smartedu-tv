@@ -49,25 +49,55 @@ class CourseRepository {
             // 1. 获取数据版本
             val version = api.getDataVersion(DATA_VERSION_URL)
 
-            // 2. 从所有分片中获取课程（取第一个分片，数据量足够）
-            val partUrl = version.urls.firstOrNull()
-                ?: return Result.failure(Exception("无可用数据源"))
-
-            val materials = api.getMaterialPart(partUrl)
+            // 2. 并行获取所有分片的数据（共3个分片，全部合并）
+            val materials = coroutineScope {
+                version.urls.map { url ->
+                    async {
+                        try {
+                            api.getMaterialPart(url)
+                        } catch (e: Exception) {
+                            emptyList<MaterialItem>()
+                        }
+                    }
+                }.awaitAll().flatten()
+            }
 
             // 3. 筛选和转换
             val courses = materials
                 .filter { item ->
                     val tags = item.tag_list ?: emptyList()
+                    
+                    // 学段匹配
                     val sectionMatch = if (section == null || section == "全部学段") true else {
                         tags.find { it.tag_dimension_id == "zxxxd" }?.tag_name?.contains(section) == true
                     }
+                    
+                    // 年级匹配 (加入高中“必修/选择性必修”兜底逻辑)
                     val gradeMatch = if (grade == null || grade == "全部年级") true else {
-                        tags.find { it.tag_dimension_id == "zxxnj" }?.tag_name?.contains(grade) == true
+                        val gradeTag = tags.find { it.tag_dimension_id == "zxxnj" }?.tag_name ?: ""
+                        val bookTag = tags.find { it.tag_dimension_id == "zxxcc" }?.tag_name ?: ""
+                        
+                        if (section == "高中") {
+                            // 高一匹配： explicit 高一 标签，或者教材名称含有“必修”且不含“选择性”
+                            if (grade == "高一") {
+                                gradeTag.contains("高一") || (bookTag.contains("必修") && !bookTag.contains("选择性必修"))
+                            } 
+                            // 高二/高三匹配：explicit 标签，或者教材名称包含“选择性必修”或“选修”
+                            else if (grade == "高二" || grade == "高三") {
+                                gradeTag.contains(grade) || bookTag.contains("选择性必修") || bookTag.contains("选修")
+                            } else {
+                                gradeTag.contains(grade)
+                            }
+                        } else {
+                            gradeTag.contains(grade)
+                        }
                     }
+                    
+                    // 版本匹配
                     val publisherMatch = if (publisher == null || publisher == "全部版本") true else {
                         tags.find { it.tag_dimension_id == "zxxbb" }?.tag_name?.contains(publisher) == true
                     }
+                    
                     sectionMatch && gradeMatch && publisherMatch
                 }
                 .take(limit)
