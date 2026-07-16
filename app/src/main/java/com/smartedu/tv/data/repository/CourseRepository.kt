@@ -92,11 +92,8 @@ class CourseRepository {
             val treeUrl = String.format(TREE_URL_TEMPLATE, courseId)
             val chapters = api.getChapterTree(treeUrl)
 
-            // 3. 获取资源列表（含视频）
+            // 3. 获取资源列表（含视频）并构建映射
             val resUrl = String.format(RESOURCES_URL_TEMPLATE, courseId)
-            val resources = try {
-                api.getPartResources(resUrl)
-            } catch (e: Exception) {
             val videoMap = try {
                 val resources = api.getPartResources(resUrl)
                 val map = mutableMapOf<String, VideoInfo>()
