@@ -1,6 +1,7 @@
 package com.smartedu.tv.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -150,7 +151,7 @@ private fun DrawerMenuItem(
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 16.dp)
-                .androidx.compose.foundation.clickable { onClick() }, // Touch bypass
+                .clickable { onClick() }, // Touch bypass
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
@@ -305,7 +306,7 @@ private fun SubjectTabs(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     fontSize = 18.sp,
                     modifier = Modifier
-                        .androidx.compose.foundation.clickable { onSelect(subject) }
+                        .clickable { onSelect(subject) }
                         .padding(horizontal = 24.dp, vertical = 10.dp)
                 )
             }
@@ -339,7 +340,7 @@ private fun PublisherTabs(
                     text = pub,
                     fontSize = 14.sp,
                     modifier = Modifier
-                        .androidx.compose.foundation.clickable { onSelect(pub) }
+                        .clickable { onSelect(pub) }
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
@@ -388,7 +389,7 @@ private fun AppleStyleCourseCard(course: Course, onClick: () -> Unit) {
             containerColor = Surface
         )
     ) {
-        Column(modifier = Modifier.androidx.compose.foundation.clickable { onClick() }) {
+        Column(modifier = Modifier.clickable { onClick() }) {
             AsyncImage(
                 model = course.coverUrl,
                 contentDescription = course.title,

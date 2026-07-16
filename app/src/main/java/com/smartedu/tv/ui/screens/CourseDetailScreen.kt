@@ -1,6 +1,7 @@
 package com.smartedu.tv.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -273,7 +274,7 @@ private fun ChapterRow(index: Int, chapter: Chapter, onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .androidx.compose.foundation.clickable { onClick() },
+                .clickable { onClick() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号
