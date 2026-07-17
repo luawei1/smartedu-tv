@@ -27,8 +27,10 @@ data class Chapter(
     val title: String,
     val videoUrl: String,
     val duration: String,
-    val coverUrl: String
+    val coverUrl: String,
+    /** 视频资源ID (用于WebView播放器) */
+    val resourceId: String = ""
 ) {
     /** 是否有可播放的视频 */
-    val hasVideo: Boolean get() = videoUrl.isNotBlank()
+    val hasVideo: Boolean get() = resourceId.isNotBlank() || videoUrl.isNotBlank()
 }

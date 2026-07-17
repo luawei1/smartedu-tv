@@ -130,26 +130,31 @@ class CourseRepository {
                 resources.forEach { part ->
                     val relations = part.relations?.national_course_resource ?: emptyList()
                     relations.forEach { res ->
+                        // res.id is the actual resource ID for WebView playback
+                        val actualResourceId = res.id
                         var preview = res.custom_properties?.preview?.frame1
                         if (preview == null && res.custom_properties?.thumbnails?.isNotEmpty() == true) {
                             preview = res.custom_properties.thumbnails.first()
                         }
                         
-                        if (preview != null) {
-                            val info = RetrofitClient.parseVideoInfo(preview)
-                            if (info != null) {
-                                val videoInfo = VideoInfo(info.first, info.second, preview)
-                                // 多重映射
-                                map[part.id] = videoInfo
-                                map[res.id] = videoInfo
-                                part.chapter_ids?.forEach { chId ->
-                                    map[chId] = videoInfo
-                                }
-                                if (!part.title.isNullOrBlank()) map[part.title] = videoInfo
-                                val resTitle = res.global_title?.`zh-CN`
-                                if (!resTitle.isNullOrBlank()) map[resTitle] = videoInfo
-                            }
+                        val coverUrl = preview ?: res.custom_properties?.thumbnails?.firstOrNull() ?: ""
+                        
+                        // Store VideoInfo with the actual resource ID
+                        val info = RetrofitClient.parseVideoInfo(preview ?: "")
+                        val parsedId = info?.first ?: ""
+                        val parsedTs = info?.second ?: ""
+                        val videoInfo = VideoInfo(actualResourceId, parsedTs, coverUrl)
+                        
+                        // Multi-key mapping for robust chapter matching
+                        map[part.id] = videoInfo
+                        map[res.id] = videoInfo
+                        if (parsedId.isNotBlank() && parsedId != actualResourceId) map[parsedId] = videoInfo
+                        part.chapter_ids?.forEach { chId ->
+                            map[chId] = videoInfo
                         }
+                        if (!part.title.isNullOrBlank()) map[part.title] = videoInfo
+                        val resTitle = res.global_title?.`zh-CN`
+                        if (!resTitle.isNullOrBlank()) map[resTitle] = videoInfo
                     }
                 }
                 map
@@ -218,20 +223,19 @@ class CourseRepository {
         nodes.forEachIndexed { index, node ->
             val num = if (prefix.isEmpty()) "${index + 1}" else "$prefix.${index + 1}"
             val title = node.rich_title ?: node.title
-            // 强大的兜底机制：优先尝试 ID 匹配，如果不匹配，再尝试标题匹配
+            // 强大的兆底机制：优先尝试 ID 匹配，如果不匹配，再尝试标题匹配
             val video = videoMap[node.id] ?: videoMap[title]
             
-            val videoUrl = if (video != null) {
-                RetrofitClient.buildVideoUrl(video.resourceId, video.timestamp)
-            } else ""
-
             result.add(
                 Chapter(
                     id = node.id,
                     title = node.rich_title ?: node.title,
-                    videoUrl = videoUrl,
+                    // videoUrl保留为空（视频通过WebView播放，不需要直接MP4地址）
+                    videoUrl = "",
                     duration = "",
-                    coverUrl = video?.coverUrl ?: ""
+                    coverUrl = video?.coverUrl ?: "",
+                    // 使用真实资源ID，播放器通过WebView将其嵌入官方播放器
+                    resourceId = video?.resourceId ?: ""
                 )
             )
 

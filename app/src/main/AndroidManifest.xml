@@ -26,8 +26,9 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="keyboard|keyboardHidden|navigation"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize"
             android:exported="true"
+            android:hardwareAccelerated="true"
             android:screenOrientation="landscape">
 
             <!-- TV Launcher intent -->
